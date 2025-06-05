@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { cn, getRandomThemeColor } from '@/lib/utils';
+import { AddressSearch } from './AddressSearch';
 import type { MapPin } from '@/types';
 
 interface PinManagerProps {
@@ -9,6 +10,7 @@ interface PinManagerProps {
   onPinAdd: (pin: Omit<MapPin, 'id'>) => void;
   onPinUpdate: (pin: MapPin) => void;
   onPinDelete: (pinId: string) => void;
+  apiKey: string;
   className?: string;
 }
 
@@ -17,6 +19,7 @@ export function PinManager({
   onPinAdd,
   onPinUpdate,
   onPinDelete,
+  apiKey,
   className,
 }: PinManagerProps) {
   const [isAddingPin, setIsAddingPin] = useState(false);
@@ -74,6 +77,21 @@ export function PinManager({
         resetForm();
       }
     }
+  };
+
+  const handleAddressSelect = (place: {
+    address: string;
+    lat: number;
+    lng: number;
+    placeId?: string;
+  }) => {
+    setFormData({
+      ...formData,
+      lat: place.lat,
+      lng: place.lng,
+      // If title is empty, use the address as title
+      title: formData.title || place.address.split(',')[0] || '',
+    });
   };
 
   return (
@@ -156,6 +174,13 @@ export function PinManager({
               />
             </div>
           </div>
+
+          {/* Address Search */}
+          <AddressSearch
+            apiKey={apiKey}
+            onPlaceSelect={handleAddressSelect}
+            placeholder="Search for an address or place..."
+          />
 
           <div className="space-y-2">
             <label htmlFor="pin-description" className="block text-sm font-medium">

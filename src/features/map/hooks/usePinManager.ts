@@ -46,7 +46,14 @@ export function usePinManager({
 
       if (existingMarker) {
         // Update existing marker position
-        existingMarker.position = { lat: pin.lat, lng: pin.lng };
+        // Handle different marker types
+        if ('setPosition' in existingMarker) {
+          // Legacy Marker has setPosition method
+          (existingMarker as google.maps.Marker).setPosition({ lat: pin.lat, lng: pin.lng });
+        } else {
+          // AdvancedMarkerElement has position property
+          (existingMarker as google.maps.marker.AdvancedMarkerElement).position = { lat: pin.lat, lng: pin.lng };
+        }
         updatedMarkers[pin.id] = existingMarker;
       } else {
         // Check if AdvancedMarkerElement is available
@@ -107,7 +114,15 @@ export function usePinManager({
     // Remove markers that no longer exist
     Object.keys(markers).forEach((markerId) => {
       if (!currentPinIds.has(markerId)) {
-        markers[markerId].setMap(null);
+        const marker = markers[markerId];
+        // Handle different marker types
+        if ('setMap' in marker) {
+          // Legacy Marker has setMap method
+          (marker as google.maps.Marker).setMap(null);
+        } else {
+          // AdvancedMarkerElement uses map property
+          (marker as google.maps.marker.AdvancedMarkerElement).map = null;
+        }
       }
     });
 
@@ -198,7 +213,14 @@ export function usePinManager({
   // Clear all markers
   const clearMarkers = useCallback(() => {
     Object.values(markers).forEach((marker) => {
-      marker.setMap(null);
+      // Handle different marker types
+      if ('setMap' in marker) {
+        // Legacy Marker has setMap method
+        (marker as google.maps.Marker).setMap(null);
+      } else {
+        // AdvancedMarkerElement uses map property
+        (marker as google.maps.marker.AdvancedMarkerElement).map = null;
+      }
     });
     setMarkers({});
   }, [markers]);

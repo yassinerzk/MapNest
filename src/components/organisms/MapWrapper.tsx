@@ -132,6 +132,7 @@ export function MapWrapper({
               onPinAdd={handlePinCreate}
               onPinUpdate={handlePinUpdate}
               onPinDelete={handlePinDelete}
+              apiKey={apiKey}
             />
             <EmbedCode
               mapId={mapId}

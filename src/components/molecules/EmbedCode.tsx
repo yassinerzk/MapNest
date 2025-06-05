@@ -216,9 +216,23 @@ export function EmbedCode({
           className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden"
           style={{ width: embedOptions.width, height: embedOptions.height, maxWidth: '100%' }}
         >
-          <div className="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500">
-            Map Preview
-          </div>
+          {embedType === 'iframe' ? (
+            <iframe 
+              src={`/embed/${mapId}`}
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen={embedOptions.allowFullscreen}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          ) : (
+            <div id={`mapnest-preview-${mapId}`} className="w-full h-full">
+              <div className="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500">
+                Script embed preview not available in editor
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
