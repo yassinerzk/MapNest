@@ -17,65 +17,81 @@ export function MapLayout({
   sidebarComponent,
   className,
 }: MapLayoutProps) {
-  // Render different layouts based on the layout type
-  switch (layout) {
-    case 'fullscreen':
-      return (
-        <div className={cn('w-full h-full relative', className)}>
-          {mapComponent}
-        </div>
-      );
-
-    case 'split':
-      return (
-        <div className={cn('w-full h-full flex flex-col md:flex-row', className)}>
-          <div className="w-full md:w-1/3 lg:w-1/4 h-80 md:h-full overflow-auto">
-            {sidebarComponent}
-          </div>
-          <div className="w-full md:w-2/3 lg:w-3/4 h-[calc(100%-20rem)] md:h-full">
+  const renderLayout = () => {
+    switch (layout) {
+      case 'fullscreen':
+        return (
+          <div className="w-full h-full min-h-[400px]">
             {mapComponent}
           </div>
-        </div>
-      );
+        );
 
-    case 'sidebar-right':
-      return (
-        <div className={cn('w-full h-full flex flex-col md:flex-row', className)}>
-          <div className="w-full md:w-2/3 lg:w-3/4 h-[calc(100%-20rem)] md:h-full">
-            {mapComponent}
-          </div>
-          <div className="w-full md:w-1/3 lg:w-1/4 h-80 md:h-full overflow-auto">
-            {sidebarComponent}
-          </div>
-        </div>
-      );
-
-    case 'floating-card':
-      return (
-        <div className={cn('w-full h-full relative', className)}>
-          {mapComponent}
-          {sidebarComponent && (
-            <div className="absolute top-4 left-4 w-80 max-h-[calc(100%-2rem)] overflow-auto rounded-lg shadow-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
-              {sidebarComponent}
+      case 'split':
+        return (
+          <div className="flex flex-col lg:flex-row w-full min-h-[400px]">
+            <div className="flex-1 min-w-0 min-h-[300px] lg:min-h-[400px]">
+              {mapComponent}
             </div>
-          )}
-        </div>
-      );
+            {sidebarComponent && (
+              <div className="w-full lg:w-80 flex-shrink-0 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[300px] lg:max-h-none">
+                {sidebarComponent}
+              </div>
+            )}
+          </div>
+        );
 
-    case 'list-mode':
-      return (
-        <div className={cn('w-full h-full flex flex-col', className)}>
-          <div className="w-full h-64 md:h-72">{mapComponent}</div>
-          <div className="w-full flex-1 overflow-auto">{sidebarComponent}</div>
-        </div>
-      );
+      case 'sidebar-right':
+        return (
+          <div className="flex flex-col lg:flex-row w-full min-h-[400px]">
+            <div className="flex-1 min-w-0 min-h-[300px] lg:min-h-[400px]">
+              {mapComponent}
+            </div>
+            {sidebarComponent && (
+              <div className="w-full lg:w-96 flex-shrink-0 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[300px] lg:max-h-none">
+                {sidebarComponent}
+              </div>
+            )}
+          </div>
+        );
 
-    default:
-      return (
-        <div className={cn('w-full h-full relative', className)}>
-          {mapComponent}
-          {sidebarComponent}
-        </div>
-      );
-  }
+      case 'floating-card':
+        return (
+          <div className="relative w-full min-h-[400px]">
+            {mapComponent}
+            {sidebarComponent && (
+              <div className="absolute top-2 right-2 left-2 sm:top-4 sm:right-4 sm:left-auto w-auto sm:w-80 max-h-[50%] sm:max-h-[calc(100%-2rem)] overflow-y-auto bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                {sidebarComponent}
+              </div>
+            )}
+          </div>
+        );
+
+      case 'list-mode':
+        return (
+          <div className="flex flex-col w-full">
+            <div className="flex-1 min-h-[250px] sm:min-h-[300px]">
+              {mapComponent}
+            </div>
+            {sidebarComponent && (
+              <div className="h-48 sm:h-64 flex-shrink-0 border-t border-gray-200 dark:border-gray-700 overflow-y-auto">
+                {sidebarComponent}
+              </div>
+            )}
+          </div>
+        );
+
+      default:
+        return (
+          <div className="w-full h-full min-h-[400px]">
+            {mapComponent}
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className={cn(className)}>
+      {renderLayout()}
+    </div>
+  );
 }

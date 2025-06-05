@@ -90,39 +90,39 @@ export function MapWrapper({
   );
 
   return (
-    <div className={cn('flex flex-col h-full', className)}>
+    <div className={cn('flex flex-col w-full', className)}>
       {/* Controls */}
       {!readOnly && (
-        <div className="p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-          <div className="flex flex-wrap gap-4 items-center">
+        <div className="flex-shrink-0 p-3 sm:p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 items-stretch sm:items-center">
             <ThemeSelector
               currentTheme={theme}
               onThemeChange={setTheme}
-              className="w-48"
+              className="w-full sm:w-48"
             />
             <LayoutSelector
               currentLayout={layout}
               onLayoutChange={setLayout}
-              className="w-48"
+              className="w-full sm:w-48"
             />
           </div>
         </div>
       )}
 
       {/* Main content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-auto">
         <MapLayout
           layout={layout}
           mapComponent={mapComponent}
           sidebarComponent={sidebarComponent}
-          className="h-full"
+          className="min-h-[400px] sm:min-h-[500px] w-full"
         />
       </div>
 
       {/* Pin manager and embed code */}
       {!readOnly && (
-        <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex-shrink-0 p-3 sm:p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
             <PinManager
               pins={pins}
               selectedPin={selectedPin}

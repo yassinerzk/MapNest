@@ -4,14 +4,12 @@ import { useState } from 'react';
 import { Dashboard } from '@/components/templates/Dashboard';
 
 export default function DashboardPage() {
-  // In a real app, this would come from environment variables
-  const [apiKey] = useState<string>('YOUR_GOOGLE_MAPS_API_KEY');
+  // Get API key from environment variables
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="h-screen">
-        <Dashboard apiKey={apiKey} />
-      </div>
+    <div className="min-h-screen w-full bg-gray-50 dark:bg-gray-900">
+      <Dashboard apiKey={apiKey} />
     </div>
   );
 }

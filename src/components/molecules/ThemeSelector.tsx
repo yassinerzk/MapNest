@@ -3,23 +3,26 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { MapTheme } from '@/types';
+import { predefinedThemes } from '@/features/map/utils/mapUtils';
 
 interface ThemeSelectorProps {
-  themes: MapTheme[];
-  selectedThemeId: string;
-  onThemeChange: (themeId: string) => void;
+  currentTheme?: MapTheme;
+  onThemeChange: (theme: MapTheme) => void;
   className?: string;
 }
 
 export function ThemeSelector({
-  themes,
-  selectedThemeId,
+  currentTheme,
   onThemeChange,
   className,
 }: ThemeSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
-
-  const selectedTheme = themes.find(theme => theme.id === selectedThemeId) || themes[0];
+  
+  // Convert predefinedThemes object to array
+  const themes = Object.values(predefinedThemes);
+  
+  // Use current theme or default to first theme
+  const selectedTheme = currentTheme || themes[0];
 
   return (
     <div className={cn('relative', className)}>
@@ -70,15 +73,15 @@ export function ThemeSelector({
                 key={theme.id}
                 className={cn(
                   'flex items-center w-full text-left px-4 py-2 text-sm',
-                  theme.id === selectedThemeId
+                  theme.id === selectedTheme.id
                     ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                     : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
                 )}
                 role="menuitem"
                 onClick={() => {
-                  onThemeChange(theme.id);
-                  setIsOpen(false);
-                }}
+                onThemeChange(theme);
+                setIsOpen(false);
+              }}
               >
                 <div 
                   className="w-4 h-4 rounded-full mr-3" 

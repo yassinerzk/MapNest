@@ -38,10 +38,10 @@ export interface MapTheme {
  */
 export type MapLayout = 
   | 'fullscreen' // Map takes full container
-  | 'sidebar-left' // Sidebar on left, map on right
+  | 'split' // Sidebar on left, map on right
   | 'sidebar-right' // Sidebar on right, map on left
-  | 'card-overlay' // Map with floating card overlay
-  | 'list-view'; // List view with small map preview
+  | 'floating-card' // Map with floating card overlay
+  | 'list-mode'; // List view with small map preview
 
 /**
  * Map Configuration

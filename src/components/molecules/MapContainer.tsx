@@ -3,10 +3,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { cn } from '@/lib/utils';
-import type { MapConfig, MapPin } from '@/types';
+import type { MapPin, MapTheme } from '@/types';
 
 interface MapContainerProps {
-  config: MapConfig;
+  apiKey: string;
+  pins: MapPin[];
+  theme?: MapTheme;
+  selectedPin?: MapPin | null;
   onPinClick?: (pin: MapPin) => void;
   onMapClick?: (event: google.maps.MapMouseEvent) => void;
   onBoundsChanged?: (bounds: google.maps.LatLngBounds) => void;
@@ -14,7 +17,10 @@ interface MapContainerProps {
 }
 
 export function MapContainer({
-  config,
+  apiKey,
+  pins,
+  theme,
+  selectedPin,
   onPinClick,
   onMapClick,
   onBoundsChanged,
@@ -27,9 +33,6 @@ export function MapContainer({
 
   // Load Google Maps API
   useEffect(() => {
-    // In a real app, this would come from environment variables
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY';
-    
     const loader = new Loader({
       apiKey,
       version: 'weekly',
@@ -56,20 +59,20 @@ export function MapContainer({
     if (!mapLoaded || !mapRef.current) return;
 
     // Apply map theme styles
-    const mapStyles = typeof config.theme === 'string' 
-      ? [] // In a real app, we would fetch theme styles by ID
-      : config.theme.styles;
+    const mapStyles = theme?.styles || [];
 
     // Create the map instance
     const mapOptions: google.maps.MapOptions = {
-      center: config.center,
-      zoom: config.zoom,
-      minZoom: config.minZoom,
-      maxZoom: config.maxZoom,
+      center: pins.length > 0 
+        ? { lat: pins[0].lat, lng: pins[0].lng } 
+        : { lat: 40.7128, lng: -74.006 }, // Default to NYC if no pins
+      zoom: 12,
+      minZoom: 3,
+      maxZoom: 18,
       styles: mapStyles,
       disableDefaultUI: true,
-      zoomControl: config.showZoomControls,
-      fullscreenControl: config.showFullscreenControl,
+      zoomControl: true,
+      fullscreenControl: true,
       mapTypeControl: false,
       streetViewControl: false,
       clickableIcons: false,
@@ -93,12 +96,12 @@ export function MapContainer({
     }
 
     // Add markers for pins
-    addPinsToMap(config.pins, map);
+    addPinsToMap(pins, map);
 
-    // Fit bounds to markers if specified
-    if (config.fitBoundsToMarkers && config.pins.length > 0) {
+    // Fit bounds to markers if there are multiple pins
+    if (pins.length > 1) {
       const bounds = new google.maps.LatLngBounds();
-      config.pins.forEach(pin => {
+      pins.forEach(pin => {
         bounds.extend({ lat: pin.lat, lng: pin.lng });
       });
       map.fitBounds(bounds);
@@ -108,7 +111,7 @@ export function MapContainer({
       // Clean up event listeners
       google.maps.event.clearInstanceListeners(map);
     };
-  }, [mapLoaded, config, onMapClick, onBoundsChanged]);
+  }, [mapLoaded, pins, theme, onMapClick, onBoundsChanged]);
 
   // Update pins when they change
   useEffect(() => {
@@ -119,15 +122,14 @@ export function MapContainer({
     markersRef.current.clear();
     
     // Add new markers
-    addPinsToMap(config.pins, googleMapRef.current);
-  }, [mapLoaded, config.pins]);
+    addPinsToMap(pins, googleMapRef.current);
+  }, [mapLoaded, pins]);
 
   // Helper function to add pins to the map
   const addPinsToMap = (pins: MapPin[], map: google.maps.Map) => {
     pins.forEach((pin, index) => {
       // Determine pin color - use pin color, theme default, or fallback
-      const pinColor = pin.color || 
-        (typeof config.theme !== 'string' ? config.theme.pinColor : '#3B82F6');
+      const pinColor = pin.color || theme?.primaryColor || '#3B82F6';
       
       // Create marker
       const marker = new google.maps.Marker({
@@ -151,8 +153,8 @@ export function MapContainer({
           strokeColor: '#FFFFFF',
           scale: 10
         },
-        opacity: pin.isActive === false ? 0.6 : 1,
-        zIndex: pin.isActive ? 1000 : index
+        opacity: (selectedPin && selectedPin.id !== pin.id) ? 0.6 : 1,
+        zIndex: (selectedPin && selectedPin.id === pin.id) ? 1000 : index
       });
 
       // Add click event
@@ -175,19 +177,23 @@ export function MapContainer({
   return (
     <div 
       className={cn(
-        'map-container',
-        config.borderRadius && `rounded-[${config.borderRadius}]`,
+        'map-container relative w-full h-full',
+        'rounded-lg overflow-hidden touch-manipulation',
         className
       )}
     >
       <div 
         ref={mapRef} 
-        className="w-full h-full min-h-[300px]"
+        className="w-full h-full min-h-[300px] sm:min-h-[400px]"
         aria-label="Interactive map"
+        style={{ touchAction: 'pan-x pan-y' }}
       />
       {!mapLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <div className="flex flex-col items-center space-y-3 sm:space-y-4 p-4">
+            <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-t-2 border-b-2 border-primary"></div>
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center">Loading map...</p>
+          </div>
         </div>
       )}
     </div>

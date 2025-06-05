@@ -5,9 +5,8 @@ import Link from "next/link";
 import { Dashboard } from '@/components/templates/Dashboard';
 
 export default function Home() {
-  // In a real app, this would come from environment variables
-  // For demo purposes, we'll use a placeholder
-  const [apiKey] = useState<string>('YOUR_GOOGLE_MAPS_API_KEY');
+  // Get API key from environment variables
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}

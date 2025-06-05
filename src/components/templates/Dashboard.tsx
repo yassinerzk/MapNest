@@ -97,19 +97,19 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
   const selectedMap = sampleMaps.find((map) => map.id === selectedMapId) || sampleMaps[0];
 
   return (
-    <div className={cn('flex flex-col h-full', className)}>
+    <div className={cn('flex flex-col min-h-screen w-full', className)}>
       {/* Header */}
-      <header className="p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-        <div className="container mx-auto flex flex-wrap justify-between items-center gap-4">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+      <header className="flex-shrink-0 p-3 sm:p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <div className="container mx-auto flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
+          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
             MapNest Dashboard
           </h1>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <select
               value={selectedMapId}
               onChange={(e) => setSelectedMapId(e.target.value)}
-              className="px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base"
             >
               {sampleMaps.map((map) => (
                 <option key={map.id} value={map.id}>
@@ -120,7 +120,7 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
             
             <button
               type="button"
-              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-sm sm:text-base whitespace-nowrap"
             >
               Create New Map
             </button>
@@ -129,13 +129,13 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-auto">
         <MapWrapper
           initialPins={selectedMap.pins}
           initialTheme={selectedMap.theme}
           mapId={selectedMap.id}
           apiKey={apiKey}
-          className="h-full"
+          className="min-h-[calc(100vh-120px)] w-full"
         />
       </main>
     </div>
