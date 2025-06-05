@@ -46,6 +46,7 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
         },
       ] as MapPin[],
       theme: {
+        id: 'corporate',
         name: 'Corporate',
         styles: [
           { featureType: 'all', elementType: 'labels.text.fill', stylers: [{ color: '#6b7280' }] },
@@ -54,6 +55,10 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
           { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#e5e7eb' }] },
           { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#d1fae5' }] },
         ],
+        primaryColor: '#4f46e5',
+        secondaryColor: '#6366f1',
+        pinColor: '#4f46e5',
+        isDark: false,
       } as MapTheme,
     },
     {
@@ -80,6 +85,7 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
         },
       ] as MapPin[],
       theme: {
+        id: 'night',
         name: 'Night Mode',
         styles: [
           { featureType: 'all', elementType: 'labels.text.fill', stylers: [{ color: '#d1d5db' }] },
@@ -88,6 +94,10 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
           { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#374151' }] },
           { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#312e81' }] },
         ],
+        primaryColor: '#8b5cf6',
+        secondaryColor: '#a78bfa',
+        pinColor: '#8b5cf6',
+        isDark: true,
       } as MapTheme,
     },
   ];

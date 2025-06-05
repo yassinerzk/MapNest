@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage, PersistOptions } from 'zustand/middleware';
+import { StateCreator } from 'zustand';
 import type { MapPin, MapTheme, MapLayout, EmbedOptions } from '@/types';
 
 interface MapState {
@@ -46,8 +47,14 @@ interface MapState {
   updateEmbedOptions: (mapId: string, options: Partial<EmbedOptions>) => void;
 }
 
+// Define a proper type for the persist middleware with correct generics
+type MapPersist = (
+  config: StateCreator<MapState, [], []>,
+  options: PersistOptions<MapState, Partial<Pick<MapState, 'maps' | 'currentMapId'>>>
+) => StateCreator<MapState, [], []>;
+
 export const useMapStore = create<MapState>(
-  persist(
+  (persist as MapPersist)(
     (set, get) => ({
       // Initial state
       maps: {},
@@ -254,6 +261,17 @@ export const useMapStore = create<MapState>(
     }),
     {
       name: 'mapnest-storage',
+      storage: createJSONStorage(() => {
+        if (typeof window !== 'undefined') {
+          return localStorage;
+        }
+        // Return a mock storage for SSR
+        return {
+          getItem: () => null,
+          setItem: () => {},
+          removeItem: () => {}
+        };
+      }),
       partialize: (state) => ({
         maps: state.maps,
         currentMapId: state.currentMapId,

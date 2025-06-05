@@ -16,7 +16,7 @@ export function usePinManager({
   selectedPin,
   onPinClick,
 }: UsePinManagerProps) {
-  const [markers, setMarkers] = useState<Record<string, google.maps.Marker>>({});
+  const [markers, setMarkers] = useState<Record<string, google.maps.marker.AdvancedMarkerElement | google.maps.Marker>>({});
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
 
   // Initialize info window
@@ -38,7 +38,7 @@ export function usePinManager({
 
     // Track which pins are still present
     const currentPinIds = new Set(pins.map((pin) => pin.id));
-    const updatedMarkers: Record<string, google.maps.Marker> = {};
+    const updatedMarkers: Record<string, google.maps.marker.AdvancedMarkerElement | google.maps.Marker> = {};
 
     // Create or update markers for each pin
     pins.forEach((pin) => {
@@ -46,31 +46,61 @@ export function usePinManager({
 
       if (existingMarker) {
         // Update existing marker position
-        existingMarker.setPosition({ lat: pin.lat, lng: pin.lng });
+        existingMarker.position = { lat: pin.lat, lng: pin.lng };
         updatedMarkers[pin.id] = existingMarker;
       } else {
-        // Create new marker
-        const marker = new google.maps.Marker({
-          position: { lat: pin.lat, lng: pin.lng },
-          map,
-          title: pin.title,
-          animation: google.maps.Animation.DROP,
-          icon: createPinIcon(pin),
-        });
+        // Check if AdvancedMarkerElement is available
+        if (window.google?.maps?.marker?.AdvancedMarkerElement) {
+          // Create pin element
+          const pinElement = createPinElement(pin);
+          
+          // Create advanced marker
+          const advancedMarker = new google.maps.marker.AdvancedMarkerElement({
+            position: { lat: pin.lat, lng: pin.lng },
+            map,
+            title: pin.title,
+            content: pinElement,
+          });
 
-        // Add click listener
-        marker.addListener('click', () => {
-          if (onPinClick) {
-            onPinClick(pin);
-          }
-        });
+          // Add click listener
+          advancedMarker.addListener('click', () => {
+            if (onPinClick) {
+              onPinClick(pin);
+            }
+          });
 
-        updatedMarkers[pin.id] = marker;
+          updatedMarkers[pin.id] = advancedMarker;
+        } else {
+          // Fallback to legacy Marker
+          const marker = new google.maps.Marker({
+            position: { lat: pin.lat, lng: pin.lng },
+            map,
+            title: pin.title,
+            animation: google.maps.Animation.DROP,
+            icon: createPinIcon(pin),
+          });
+
+          // Add click listener
+          marker.addListener('click', () => {
+            if (onPinClick) {
+              onPinClick(pin);
+            }
+          });
+
+          updatedMarkers[pin.id] = marker;
+        }
       }
 
-      // Update marker icon (for color changes)
+      // Update marker appearance (for color changes)
       if (updatedMarkers[pin.id]) {
-        updatedMarkers[pin.id].setIcon(createPinIcon(pin));
+        if ('setIcon' in updatedMarkers[pin.id]) {
+          // Legacy marker - update icon
+          (updatedMarkers[pin.id] as google.maps.Marker).setIcon(createPinIcon(pin));
+        } else {
+          // Advanced marker - update content
+          const advancedMarker = updatedMarkers[pin.id] as google.maps.marker.AdvancedMarkerElement;
+          advancedMarker.content = createPinElement(pin);
+        }
       }
     });
 
@@ -110,7 +140,7 @@ export function usePinManager({
     }
   }, [map, selectedPin, markers]);
 
-  // Create custom pin icon
+  // Create custom pin icon (for legacy markers)
   const createPinIcon = useCallback((pin: MapPin) => {
     const isSelected = selectedPin?.id === pin.id;
     const scale = isSelected ? 1.2 : 1;
@@ -125,6 +155,44 @@ export function usePinManager({
       strokeWeight,
       scale: 10 * scale,
     };
+  }, [selectedPin]);
+
+  // Create pin element (for advanced markers)
+  const createPinElement = useCallback((pin: MapPin) => {
+    const isSelected = selectedPin?.id === pin.id;
+    
+    if (pin.icon) {
+      // Use custom icon if provided
+      const img = document.createElement('img');
+      img.src = pin.icon;
+      img.width = 32;
+      img.height = 32;
+      img.style.cursor = 'pointer';
+      img.style.opacity = isSelected ? '1' : '0.8';
+      img.style.transform = isSelected ? 'scale(1.1)' : 'scale(1)';
+      img.style.transition = 'all 0.2s ease';
+      return img;
+    } else {
+      // Create a custom pin element with the specified color
+      const pinDiv = document.createElement('div');
+      pinDiv.className = 'custom-advanced-pin';
+      pinDiv.style.width = isSelected ? '28px' : '24px';
+      pinDiv.style.height = isSelected ? '28px' : '24px';
+      pinDiv.style.borderRadius = '50%';
+      pinDiv.style.backgroundColor = pin.color || '#4f46e5';
+      pinDiv.style.border = '2px solid white';
+      pinDiv.style.boxShadow = isSelected 
+        ? '0 4px 12px rgba(0,0,0,0.4)' 
+        : '0 2px 6px rgba(0,0,0,0.3)';
+      pinDiv.style.cursor = 'pointer';
+      pinDiv.style.transition = 'all 0.2s ease';
+      
+      if (pin.animation === 'bounce') {
+        pinDiv.style.animation = 'bounce 0.5s infinite alternate';
+      }
+      
+      return pinDiv;
+    }
   }, [selectedPin]);
 
   // Clear all markers

@@ -47,8 +47,12 @@ export function MapWrapper({
   };
 
   // Handle pin creation
-  const handlePinCreate = (pin: MapPin) => {
-    setPins([...pins, pin]);
+  const handlePinCreate = (pin: Omit<MapPin, 'id'>) => {
+    const newPin: MapPin = {
+      ...pin,
+      id: `pin-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    };
+    setPins([...pins, newPin]);
   };
 
   // Handle pin update
@@ -83,8 +87,8 @@ export function MapWrapper({
   const sidebarComponent = (
     <Sidebar
       pins={pins}
-      selectedPin={selectedPin}
-      onPinSelect={handlePinSelect}
+      activePinId={selectedPin?.id}
+      onPinClick={handlePinSelect}
       className="w-full h-full"
     />
   );
@@ -125,11 +129,9 @@ export function MapWrapper({
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
             <PinManager
               pins={pins}
-              selectedPin={selectedPin}
-              onPinCreate={handlePinCreate}
+              onPinAdd={handlePinCreate}
               onPinUpdate={handlePinUpdate}
               onPinDelete={handlePinDelete}
-              onPinSelect={handlePinSelect}
             />
             <EmbedCode
               mapId={mapId}
