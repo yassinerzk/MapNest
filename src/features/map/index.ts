@@ -7,12 +7,12 @@ export { ThemeSelector } from '@/components/molecules/ThemeSelector';
 export { PinManager } from '@/components/molecules/PinManager';
 export { LayoutSelector } from '@/components/molecules/LayoutSelector';
 export { EmbedCode } from '@/components/molecules/EmbedCode';
-export { MapLayout } from '@/components/layouts/MapLayout';
+export { MapLayout as MapLayoutComponent } from '@/components/layouts/MapLayout';
 export { MapWrapper } from '@/components/organisms/MapWrapper';
 export { Dashboard } from '@/components/templates/Dashboard';
 
 // Types
-export type { MapPin, MapTheme, MapLayout as MapLayoutType, EmbedOptions } from '@/types';
+export type { MapPin, MapTheme, MapLayout, EmbedOptions } from '@/types';
 
 // Hooks
 // Will be added as they are created

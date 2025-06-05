@@ -2,10 +2,10 @@
 
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import type { MapLayout as MapLayoutType } from '@/types';
+import type { MapLayout } from '@/types';
 
 interface MapLayoutProps {
-  layout: MapLayoutType;
+  layout: MapLayout;
   mapComponent: ReactNode;
   sidebarComponent?: ReactNode;
   className?: string;

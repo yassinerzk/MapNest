@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { MapWrapper } from '@/components/organisms/MapWrapper';
-import { predefinedThemes } from '@/features/map/utils/mapUtils';
+import { getThemeById, getDefaultTheme } from '@/lib/themeUtils';
 import type { MapPin } from '@/types';
 
 interface EmbedPageProps {
@@ -59,9 +59,9 @@ export default function EmbedPage({ params, searchParams }: EmbedPageProps) {
   ]);
 
   // Get theme from search params or use default
-  const theme = searchParams.theme && predefinedThemes[searchParams.theme] 
-    ? predefinedThemes[searchParams.theme] 
-    : predefinedThemes.light;
+  const theme = searchParams.theme 
+    ? getThemeById(searchParams.theme) || getDefaultTheme()
+    : getDefaultTheme();
 
   // Get layout from search params or use default
   const layout = searchParams.layout && ['fullscreen', 'split', 'sidebar-right', 'floating-card', 'list-mode'].includes(searchParams.layout)

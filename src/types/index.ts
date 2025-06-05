@@ -31,7 +31,15 @@ export interface MapTheme {
   secondaryColor: string; // Tailwind color
   pinColor: string; // Default pin color
   isDark: boolean;
+  emoji?: string; // Optional emoji for theme display
+  description?: string; // Optional description
+  category?: 'standard' | 'dark' | 'colorful' | 'minimal' | 'vintage' | 'nature';
 }
+
+/**
+ * Map Style Key type for predefined styles
+ */
+export type MapStyleKey = 'default' | 'darkNova' | 'pastelPop' | 'minimalInk' | 'retroWave' | 'cyberNight' | 'sepiaDust' | 'oceanBreeze' | 'sakuraBlossom' | 'desertGlow' | 'midnightBlues';
 
 /**
  * Map Layout options

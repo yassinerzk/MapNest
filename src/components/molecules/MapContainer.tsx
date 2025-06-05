@@ -13,6 +13,7 @@ interface MapContainerProps {
   onPinClick?: (pin: MapPin) => void;
   onMapClick?: (event: google.maps.MapMouseEvent) => void;
   onBoundsChanged?: (bounds: google.maps.LatLngBounds) => void;
+  onMapLoad?: (map: google.maps.Map) => void;
   className?: string;
 }
 
@@ -24,6 +25,7 @@ export function MapContainer({
   onPinClick,
   onMapClick,
   onBoundsChanged,
+  onMapLoad,
   className,
 }: MapContainerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -108,6 +110,11 @@ export function MapContainer({
 
     const map = new google.maps.Map(mapRef.current, mapOptions);
     googleMapRef.current = map;
+
+    // Call onMapLoad callback if provided
+    if (onMapLoad) {
+      onMapLoad(map);
+    }
 
     // Add event listeners
     if (onMapClick) {

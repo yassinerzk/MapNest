@@ -53,17 +53,31 @@ export default function Home() {
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Powerful Features</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                  <circle cx="12" cy="10" r="3"></circle>
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Custom Pins</h3>
-              <p className="text-gray-600">Create beautiful, branded pins with custom colors, icons, and animations.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-gray-100">🗺️ Interactive Maps</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Create beautiful, interactive maps with custom pins and themes.
+              </p>
+              <Link 
+                href="/map" 
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Create Map
+              </Link>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-gray-100">🎨 Theme Gallery</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Explore our collection of 10+ beautiful map themes with live previews.
+              </p>
+              <Link 
+                href="/themes" 
+                className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+              >
+                Browse Themes
+              </Link>
             </div>
             
             {/* Feature 2 */}

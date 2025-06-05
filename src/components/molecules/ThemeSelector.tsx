@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { MapTheme } from '@/types';
-import { predefinedThemes } from '@/features/map/utils/mapUtils';
+import { getAllThemes, getThemesByCategory, getDefaultTheme } from '@/lib/themeUtils';
 
 interface ThemeSelectorProps {
   currentTheme?: MapTheme;
@@ -17,12 +17,29 @@ export function ThemeSelector({
   className,
 }: ThemeSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   
-  // Convert predefinedThemes object to array
-  const themes = Object.values(predefinedThemes);
+  // Get all themes
+  const allThemes = getAllThemes();
   
-  // Use current theme or default to first theme
-  const selectedTheme = currentTheme || themes[0];
+  // Filter themes by category
+  const filteredThemes = selectedCategory === 'all' 
+    ? allThemes 
+    : getThemesByCategory(selectedCategory);
+  
+  // Use current theme or default
+  const selectedTheme = currentTheme || getDefaultTheme();
+  
+  // Categories for filtering
+  const categories = [
+    { key: 'all', name: 'All Themes', emoji: '🎨' },
+    { key: 'standard', name: 'Standard', emoji: '🗺️' },
+    { key: 'dark', name: 'Dark', emoji: '🌙' },
+    { key: 'colorful', name: 'Colorful', emoji: '🌈' },
+    { key: 'minimal', name: 'Minimal', emoji: '⚪' },
+    { key: 'vintage', name: 'Vintage', emoji: '📸' },
+    { key: 'nature', name: 'Nature', emoji: '🌿' }
+  ];
 
   return (
     <div className={cn('relative', className)}>
@@ -68,7 +85,7 @@ export function ThemeSelector({
           aria-labelledby="theme-selector"
         >
           <div className="py-1" role="none">
-            {themes.map((theme) => (
+            {filteredThemes.map((theme) => (
               <button
                 key={theme.id}
                 className={cn(
