@@ -51,10 +51,18 @@ export function MapWrapper({
   }, [initialPins]);
 
   useEffect(() => {
-    setTheme(initialTheme || getDefaultTheme());
+    const newTheme = initialTheme || getDefaultTheme();
+    console.log('MapWrapper: Setting theme from initialTheme:', {
+      themeName: newTheme.name,
+      themeId: newTheme.id,
+      hasStyles: !!newTheme.styles,
+      stylesCount: newTheme.styles?.length || 0
+    });
+    setTheme(newTheme);
   }, [initialTheme]);
 
   useEffect(() => {
+    console.log('MapWrapper: Setting layout from initialLayout:', initialLayout);
     setLayout(initialLayout);
   }, [initialLayout]);
 
@@ -227,7 +235,8 @@ export function MapWrapper({
               mapId={mapId}
               options={{
                 ...embedOptions,
-                theme: theme // Pass the current theme to embed options
+                theme: theme, // Pass the current theme to embed options
+                layout: layout // Pass the current layout to embed options
               }}
               onOptionsChange={setEmbedOptions}
             />

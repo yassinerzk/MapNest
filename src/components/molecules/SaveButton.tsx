@@ -66,7 +66,7 @@ export function SaveButton({
 
   const handleExport = () => {
     try {
-      mapDatabase.exportToFile();
+      mapDatabase.createBackup();
     } catch (error) {
       console.error('Export error:', error);
       onSaveError?.(error instanceof Error ? error.message : 'Failed to export data');
@@ -85,7 +85,7 @@ export function SaveButton({
       reader.onload = (e) => {
         try {
           const content = e.target?.result as string;
-          mapDatabase.importFromJson(content);
+          mapDatabase.importDatabase(content);
           onSaveSuccess?.();
         } catch (error) {
           console.error('Import error:', error);

@@ -30,27 +30,69 @@ export default function EmbedPage({ params, searchParams }: EmbedPageProps) {
   
   // Load map data from database
   useEffect(() => {
-    const loadMapData = () => {
-      const mapData = mapDatabase.getMap(params.mapId);
-      
-      if (mapData) {
-        setPins(mapData.pins || []);
-        setTheme(mapData.theme || getDefaultTheme());
-        setLayout(mapData.layout || 'fullscreen');
-        setEmbedOptions(mapData.embedOptions || {});
-      } else {
-        console.warn('EmbedPage: Map not found for mapId:', params.mapId, 'using default data');
-        // Use default data if map not found
+    const loadMapData = async () => {
+      try {
+        const mapData = mapDatabase.getMap(params.mapId);
+        
+        if (mapData) {
+          // Apply URL overrides first, then set state
+          const finalTheme = searchParams.theme 
+            ? getThemeById(searchParams.theme) || mapData.theme || getDefaultTheme()
+            : mapData.theme || getDefaultTheme();
+            
+          const finalLayout = searchParams.layout && ['fullscreen', 'split', 'sidebar-right', 'floating-card', 'list-mode'].includes(searchParams.layout)
+            ? searchParams.layout as MapLayout
+            : mapData.layout || 'fullscreen';
+          
+          // Set all state synchronously to avoid timing issues
+          setPins(mapData.pins || []);
+          setTheme(finalTheme);
+          setLayout(finalLayout);
+          setEmbedOptions(mapData.embedOptions || {});
+          
+          console.log('EmbedPage: Map data loaded successfully', {
+            mapId: params.mapId,
+            themeName: finalTheme.name,
+            themeId: finalTheme.id,
+            layout: finalLayout,
+            pinsCount: mapData.pins?.length || 0
+          });
+        } else {
+          console.warn('EmbedPage: Map not found for mapId:', params.mapId, 'using default data');
+          // Use default data if map not found, but still apply URL overrides
+          const finalTheme = searchParams.theme 
+            ? getThemeById(searchParams.theme) || getDefaultTheme()
+            : getDefaultTheme();
+            
+          const finalLayout = searchParams.layout && ['fullscreen', 'split', 'sidebar-right', 'floating-card', 'list-mode'].includes(searchParams.layout)
+            ? searchParams.layout as MapLayout
+            : 'fullscreen';
+            
+          setPins([]);
+          setTheme(finalTheme);
+          setLayout(finalLayout);
+        }
+      } catch (error) {
+        console.error('EmbedPage: Error loading map data:', error);
+        // Fallback to defaults with URL overrides
+        const finalTheme = searchParams.theme 
+          ? getThemeById(searchParams.theme) || getDefaultTheme()
+          : getDefaultTheme();
+          
+        const finalLayout = searchParams.layout && ['fullscreen', 'split', 'sidebar-right', 'floating-card', 'list-mode'].includes(searchParams.layout)
+          ? searchParams.layout as MapLayout
+          : 'fullscreen';
+          
         setPins([]);
-        setTheme(getDefaultTheme());
-        setLayout('fullscreen');
+        setTheme(finalTheme);
+        setLayout(finalLayout);
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
     };
     
     loadMapData();
-  }, [params.mapId]);
+  }, [params.mapId, searchParams.theme, searchParams.layout]);
   
   // Show error if API key is missing
   if (!apiKey) {
@@ -80,16 +122,6 @@ export default function EmbedPage({ params, searchParams }: EmbedPageProps) {
     );
   }
 
-  // Override theme from search params if provided
-  const finalTheme = searchParams.theme 
-    ? getThemeById(searchParams.theme) || theme
-    : theme;
-
-  // Override layout from search params if provided
-  const finalLayout = searchParams.layout && ['fullscreen', 'split', 'sidebar-right', 'floating-card', 'list-mode'].includes(searchParams.layout)
-    ? searchParams.layout as MapLayout
-    : layout;
-
   // Check if full interface should be shown
   const showFullInterface = searchParams.fullInterface === 'true';
 
@@ -97,8 +129,8 @@ export default function EmbedPage({ params, searchParams }: EmbedPageProps) {
     <div className="h-screen w-screen overflow-hidden">
       <MapWrapper
         initialPins={pins}
-        initialTheme={finalTheme}
-        initialLayout={finalLayout}
+        initialTheme={theme}
+        initialLayout={layout}
         initialEmbedOptions={embedOptions}
         mapId={params.mapId}
         apiKey={apiKey}

@@ -7,6 +7,7 @@ import type { MapPin, MapTheme, MapLayout, EmbedOptions } from '@/types';
 
 export interface MapData {
   id: string;
+  userId: string;
   name: string;
   description?: string;
   pins: MapPin[];
@@ -87,8 +88,12 @@ export class MapDatabase {
       const migratedMaps: Record<string, MapData> = {};
       
       Object.entries(data.maps).forEach(([id, oldMap]: [string, any]) => {
+        // Extract userId from existing composite ID or default to 'user'
+        const userId = id.includes('_') ? id.split('_')[0] : 'user';
+        
         migratedMaps[id] = {
           id,
+          userId,
           name: oldMap.name || `Map ${id}`,
           description: '',
           pins: oldMap.pins || [],
@@ -140,18 +145,20 @@ export class MapDatabase {
   }
 
   // Generate unique ID for new maps
-  generateMapId(): string {
-    return `map_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  generateMapId(userId: string = 'user'): string {
+    const mapId = `map_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `${userId}_${mapId}`;
   }
 
   // Create a new map
-  createMap(mapData: Omit<MapData, 'id' | 'createdAt' | 'updatedAt'>): MapData {
-    const id = this.generateMapId();
+  createMap(mapData: Omit<MapData, 'id' | 'userId' | 'createdAt' | 'updatedAt'>, userId: string = 'user'): MapData {
+    const id = this.generateMapId(userId);
     const now = Date.now();
     
     const newMap: MapData = {
       ...mapData,
       id,
+      userId,
       createdAt: now,
       updatedAt: now,
     };
@@ -186,6 +193,12 @@ export class MapDatabase {
   // Get map by ID
   getMap(id: string): MapData | null {
     return this.data.maps[id] || null;
+  }
+
+  // Get map by userId and mapId
+  getMapByUserAndId(userId: string, mapId: string): MapData | null {
+    const compositeId = `${userId}_${mapId}`;
+    return this.data.maps[compositeId] || null;
   }
 
   // Get all maps
@@ -255,7 +268,7 @@ export class MapDatabase {
         ...pin,
         id: `pin-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       })),
-    });
+    }, originalMap.userId);
 
     return duplicatedMap;
   }

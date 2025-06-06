@@ -81,7 +81,7 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
       },
       isPublic: false,
       tags: ['business', 'locations'],
-    });
+    }, 'demo-user');
 
     // Create Tourist Attractions map
     const touristMap = mapDatabase.createMap({
@@ -120,7 +120,7 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
       },
       isPublic: true,
       tags: ['tourism', 'nyc'],
-    });
+    }, 'demo-user');
 
     // Update embed options with actual map IDs
     mapDatabase.updateMap(businessMap.id, {
@@ -158,7 +158,7 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
       },
       isPublic: false,
       tags: [],
-    });
+    }, 'demo-user');
 
     // Update embed options with actual map ID
     mapDatabase.updateMap(newMap.id, {

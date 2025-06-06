@@ -220,7 +220,7 @@ export function MapContainer({
     };
   }, [mapLoaded, pins, onMapClick, onBoundsChanged]);
 
-  // Update map styles when theme changes
+  // Update map styles when theme changes or on initial render
   useEffect(() => {
     if (!googleMapRef.current || !theme) {
       console.log('MapContainer: Cannot apply theme - map or styles not available', {
@@ -233,12 +233,9 @@ export function MapContainer({
     // Check if theme has styles property and it's an array
     if (!theme.styles || !Array.isArray(theme.styles)) {
       console.error('MapContainer: Theme styles is not an array:', theme);
-      alert(`Error: Theme styles for ${theme.name} is not in the correct format`);
       return;
     }
     
-    // Alert for debugging
-    alert(`Applying theme: ${theme.name}\nStyles count: ${theme.styles.length}`);
     console.log('MapContainer: Applying theme styles:', { 
       themeName: theme.name, 
       themeId: theme.id,
@@ -248,39 +245,56 @@ export function MapContainer({
       apiKeyStatus: !!apiKey
     });
     
-    try {
-      // APPROACH 1: Apply styles directly to existing map using setOptions
-      console.log('APPROACH 1: Applying styles directly to existing map using setOptions');
-      
-      // Force a deep clone of the styles to ensure Google Maps recognizes the change
-      const clonedStyles = JSON.parse(JSON.stringify(theme.styles));
-      
-      // Log the exact styles we're applying
-      console.log('Styles being applied:', {
-        count: clonedStyles.length,
-        sample: clonedStyles.length > 0 ? JSON.stringify(clonedStyles[0]) : 'No styles'
-      });
-      
-      // Apply styles to existing map using setOptions as recommended in Google Maps documentation
-      googleMapRef.current.setOptions({ styles: clonedStyles });
-      
-      // Force map redraw
-      google.maps.event.trigger(googleMapRef.current, 'resize');
-      
-      // Check for development purposes watermark which indicates API key restrictions
-      checkForDevelopmentWatermark(googleMapRef.current);
-      
-      // Always create a new map instance as a more aggressive approach
-      console.log('Creating new map instance to ensure styles are applied');
-      createNewMapInstance(clonedStyles);
-      
-      // Alert for user feedback
-      alert(`Theme applied: ${theme.name}\nStyles count: ${clonedStyles.length}\nMap has been recreated to ensure styles are applied.`);
-    } catch (error: unknown) {
-      console.error('Error applying theme styles:', error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      alert(`Error applying theme styles: ${errorMessage}`);
-    }
+    // Add a small delay to ensure the map is fully initialized
+    // This helps with the initial render and embedded maps
+    const applyStyles = () => {
+      try {
+        // APPROACH 1: Apply styles directly to existing map using setOptions
+        console.log('APPROACH 1: Applying styles directly to existing map using setOptions');
+        
+        // Force a deep clone of the styles to ensure Google Maps recognizes the change
+        const clonedStyles = JSON.parse(JSON.stringify(theme.styles));
+        
+        // Log the exact styles we're applying
+        console.log('Styles being applied:', {
+          count: clonedStyles.length,
+          sample: clonedStyles.length > 0 ? JSON.stringify(clonedStyles[0]) : 'No styles'
+        });
+        
+        // Apply styles to existing map using setOptions as recommended in Google Maps documentation
+        googleMapRef.current?.setOptions({ styles: clonedStyles });
+        
+        // Force map redraw
+        if (googleMapRef.current) {
+          google.maps.event.trigger(googleMapRef.current, 'resize');
+        }
+        
+        // Check for development purposes watermark which indicates API key restrictions
+        if (googleMapRef.current) {
+          checkForDevelopmentWatermark(googleMapRef.current);
+        }
+        
+        // Always create a new map instance as a more aggressive approach
+        console.log('Creating new map instance to ensure styles are applied');
+        createNewMapInstance(clonedStyles);
+      } catch (error: unknown) {
+        console.error('Error applying theme styles:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Error applying theme styles: ${errorMessage}`);
+      }
+    };
+    
+    // Apply styles immediately and then again after a short delay
+    // This helps ensure styles are applied both on initial render and after map is fully loaded
+    applyStyles();
+    
+    // Apply styles again after a delay to ensure they're applied after the map is fully rendered
+    const styleTimer = setTimeout(() => {
+      console.log('Applying styles again after delay to ensure they are applied');
+      applyStyles();
+    }, 500);
+    
+    return () => clearTimeout(styleTimer);
   }, [theme, apiKey]);
   
   // Helper function to create a new map instance with styles
@@ -372,12 +386,12 @@ export function MapContainer({
       }, 500);
       
       console.log('MapContainer: New map instance created with styles');
-      alert(`Map completely recreated with new styles.\nTheme: ${theme?.name}\nStyles applied: ${clonedStyles.length}`);
+      // Verification of styles application is done via console logs only
     }
     catch (error: unknown) {
       console.error('Error creating new map instance:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      alert(`Error creating new map: ${errorMessage}`);
+      console.error(`Error creating new map: ${errorMessage}`);
     }
   };
 

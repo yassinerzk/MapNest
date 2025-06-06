@@ -253,7 +253,10 @@ export function generateEmbedCode(
   } = {}
 ): string {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mapnest.app';
-  const url = `${baseUrl}/embed/${mapId}`;
+  
+  // Extract userId and mapId from composite mapId
+  const [userId, actualMapId] = mapId.includes('_') ? mapId.split('_', 2) : ['user', mapId];
+  const url = `${baseUrl}/${userId}/${actualMapId}?embed=true`;
   
   const width = options.width || '100%';
   const height = options.height || '500px';

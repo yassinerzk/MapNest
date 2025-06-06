@@ -42,16 +42,18 @@ export function EmbedCode({
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mapnest.app';
     const params = new URLSearchParams();
     
-    // Add theme ID to URL if available in options
-    if (options.theme?.id) {
-      params.set('theme', options.theme.id);
-    }
+    // Always add embed=true to indicate this is an embed view
+    params.set('embed', 'true');
     
     if (embedOptions.showFullInterface) {
       params.set('fullInterface', 'true');
     }
     
-    const url = `${baseUrl}/embed/${mapId}${params.toString() ? '?' + params.toString() : ''}`;
+    // Extract userId and mapId from the composite mapId
+    // Assuming mapId format is "userId_mapId"
+    const [userId, actualMapId] = mapId.includes('_') ? mapId.split('_', 2) : ['user', mapId];
+    
+    const url = `${baseUrl}/${userId}/${actualMapId}${params.toString() ? '?' + params.toString() : ''}`;
     
     return `<iframe 
   src="${url}" 
@@ -68,11 +70,23 @@ export function EmbedCode({
   const generateScriptCode = (): string => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mapnest.app';
     
-    // Add theme data attribute if available
-    const themeAttr = options.theme?.id ? `data-theme="${options.theme.id}"` : '';
+    // Extract userId and mapId from the composite mapId
+    const [userId, actualMapId] = mapId.includes('_') ? mapId.split('_', 2) : ['user', mapId];
     
-    return `<div id="mapnest-${mapId}" style="width:${embedOptions.width};height:${embedOptions.height};"></div>
-<script src="${baseUrl}/api/embed.js" data-mapid="${mapId}" ${themeAttr} ${embedOptions.responsive ? 'data-responsive="true"' : ''} ${embedOptions.showFullInterface ? 'data-full-interface="true"' : ''} async></script>`;
+    return `<div 
+  id="mapnest-embed-${mapId}" 
+  data-user-id="${userId}" 
+  data-map-id="${actualMapId}" 
+  data-width="${embedOptions.width}" 
+  data-height="${embedOptions.height}" 
+  ${embedOptions.showFullInterface ? 'data-full-interface="true"' : ''} 
+  style="width: ${embedOptions.width}; height: ${embedOptions.height};"
+></div>
+<script 
+  src="${baseUrl}/embed.js" 
+  async 
+  defer
+></script>`;
   };
 
   // Get the appropriate code based on selected type
