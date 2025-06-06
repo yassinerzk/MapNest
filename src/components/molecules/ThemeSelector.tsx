@@ -102,7 +102,7 @@ export function ThemeSelector({
               >
                 <div 
                   className="w-4 h-4 rounded-full mr-3" 
-                  style={{ backgroundColor: theme.primaryColor }}
+                  style={{ backgroundColor: theme.pinColor }}
                   aria-hidden="true"
                 />
                 <div className="flex-1">{theme.name}</div>

@@ -3,8 +3,8 @@
  * Converts map styles to MapTheme objects and provides theme management functions
  */
 
-import { mapStyles, themeMetadata, type MapStyleKey } from '@/themes/mapStyles';
-import type { MapTheme, MapStyleKey as TypeMapStyleKey } from '@/types';
+import { mapStyles, themeMetadata } from '@/themes/mapStyles';
+import type { MapTheme, MapStyleKey } from '@/types';
 
 /**
  * Color palettes for each theme to determine pin colors and UI colors
@@ -43,7 +43,7 @@ const themeColorPalettes = {
   sepiaDust: {
     primaryColor: 'amber-700',
     secondaryColor: 'orange-600',
-    pinColor: '#795548'
+    pinColor: '#4a4238'
   },
   oceanBreeze: {
     primaryColor: 'blue-600',
@@ -64,29 +64,54 @@ const themeColorPalettes = {
     primaryColor: 'blue-400',
     secondaryColor: 'indigo-300',
     pinColor: '#bbdefb'
+  },
+  forestCalm: {
+    primaryColor: 'green-600',
+    secondaryColor: 'emerald-400',
+    pinColor: '#33691e'
+  },
+  oceanBlue: {
+    primaryColor: 'blue-700',
+    secondaryColor: 'blue-400',
+    pinColor: '#1565c0'
+  },
+  mysticPurple: {
+    primaryColor: 'purple-600',
+    secondaryColor: 'violet-400',
+    pinColor: '#4527a0'
+  },
+  citrusZest: {
+    primaryColor: 'orange-500',
+    secondaryColor: 'amber-400',
+    pinColor: '#e65100'
   }
 };
 
 /**
  * Convert a map style key to a complete MapTheme object
+ * Creates a deep clone to prevent object reference issues
  */
 export function createThemeFromStyle(styleKey: MapStyleKey): MapTheme {
   const metadata = themeMetadata[styleKey];
   const colors = themeColorPalettes[styleKey];
   const styles = mapStyles[styleKey];
 
-  return {
+  // Create a deep clone of the theme object to prevent mutation issues
+  const theme = {
     id: styleKey,
     name: metadata.name,
     description: metadata.description,
     emoji: metadata.emoji,
     category: metadata.category,
-    styles: styles,
+    styles: JSON.parse(JSON.stringify(styles)), // Deep clone styles array
     primaryColor: colors.primaryColor,
     secondaryColor: colors.secondaryColor,
     pinColor: colors.pinColor,
     isDark: metadata.isDark
   };
+
+  console.log('ThemeUtils: Created theme:', { styleKey, theme });
+  return theme;
 }
 
 /**

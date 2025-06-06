@@ -25,7 +25,7 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
           lat: 40.7128,
           lng: -74.006,
           color: '#4f46e5',
-          icon: 'office',
+          icon: '/office.svg',
         },
         {
           id: 'pin-2',
@@ -34,7 +34,7 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
           lat: 40.7282,
           lng: -73.9942,
           color: '#10b981',
-          icon: 'store',
+          icon: '/store.svg',
         },
         {
           id: 'pin-3',
@@ -43,7 +43,7 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
           lat: 40.6892,
           lng: -74.0445,
           color: '#f59e0b',
-          icon: 'warehouse',
+          icon: '/warehouse.svg',
         },
       ] as MapPin[],
       theme: getThemeById('minimalInk') || getDefaultTheme(),

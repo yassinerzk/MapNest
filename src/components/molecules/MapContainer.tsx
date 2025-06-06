@@ -17,6 +17,9 @@ interface MapContainerProps {
   className?: string;
 }
 
+// Check if we're in development or production
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 export function MapContainer({
   apiKey,
   pins,
@@ -36,11 +39,20 @@ export function MapContainer({
 
   // Load Google Maps API
   useEffect(() => {
+    // Make sure we have a valid API key
+    if (!apiKey || apiKey.trim() === '') {
+      console.error('MapContainer: Missing or empty Google Maps API key');
+      setMapError('Google Maps API key is missing or empty. Please check your environment variables.');
+      return;
+    }
+    
+    console.log('MapContainer: Loading Google Maps API with key:', apiKey.substring(0, 8) + '...');
+    
     const loader = new Loader({
       apiKey,
       version: 'weekly',
       libraries: ['places', 'marker'],
-      mapIds: ['MAPNEST_MAP_ID'] // Required for AdvancedMarkerElement
+      mapIds: ['MAPNEST_MAP_ID'], // Required for AdvancedMarkerElement
     });
 
     loader.load().then(() => {
@@ -81,12 +93,55 @@ export function MapContainer({
     };
   }, []);
 
+  // Function to check for the development watermark
+  const checkForDevelopmentWatermark = (map: google.maps.Map) => {
+    setTimeout(() => {
+      try {
+        const mapDiv = map.getDiv();
+        const watermarkElements = mapDiv.querySelectorAll('div');
+        let hasWatermark = false;
+        
+        watermarkElements.forEach(el => {
+          if (el.textContent?.includes('For development purposes only')) {
+            hasWatermark = true;
+            console.error('GOOGLE MAPS API KEY ISSUE: "For development purposes only" watermark detected');
+            console.error('This indicates your API key may have one of these issues:');
+            console.error('1. Billing is not enabled on your Google Cloud account');
+            console.error('2. The API key has restrictions preventing it from working on your domain');
+            console.error('3. The Maps JavaScript API is not enabled for this API key');
+            
+            alert('Google Maps API Key Issue Detected!\n\nThe "For development purposes only" watermark indicates your API key needs attention.\n\nPlease check the console for details on how to fix this.');
+          }
+        });
+        
+        return hasWatermark;
+      } catch (error: unknown) {
+        console.error('Error checking for watermark:', error);
+        return false;
+      }
+    }, 1000); // Check after map has fully loaded
+  };
+
   // Initialize map when API is loaded
   useEffect(() => {
     if (!mapLoaded || !mapRef.current) return;
 
-    // Apply map theme styles
-    const mapStyles = theme?.styles || [];
+    // Apply map theme styles - ensure we have a deep clone to avoid reference issues
+    const mapStyles = theme?.styles ? JSON.parse(JSON.stringify(theme.styles)) : [];
+    
+    console.log('MapContainer: Initializing map with styles:', { 
+      themeName: theme?.name, 
+      stylesCount: mapStyles.length,
+      stylesData: JSON.stringify(mapStyles)
+    });
+    
+    // Log API key status for debugging
+    console.log('MapContainer: API Key status:', {
+      hasKey: !!apiKey,
+      keyLength: apiKey?.length,
+      keyStart: apiKey?.substring(0, 8) + '...',
+      isDevelopment: isDevelopment
+    });
 
     // Create the map instance
     const mapOptions: google.maps.MapOptions = {
@@ -108,8 +163,20 @@ export function MapContainer({
       mapId: 'MAPNEST_MAP_ID', // Required for AdvancedMarkerElement
     };
 
+    // Create a map instance
+    console.log('Creating Google Map with options:', {
+      center: mapOptions.center,
+      zoom: mapOptions.zoom,
+      stylesLength: mapOptions.styles?.length || 0,
+      firstStyle: mapOptions.styles && mapOptions.styles.length > 0 ? 
+        JSON.stringify(mapOptions.styles[0]).substring(0, 100) + '...' : 'No styles'
+    });
+    
     const map = new google.maps.Map(mapRef.current, mapOptions);
     googleMapRef.current = map;
+    
+    // Check for development watermark
+    checkForDevelopmentWatermark(map);
 
     // Call onMapLoad callback if provided
     if (onMapLoad) {
@@ -139,12 +206,182 @@ export function MapContainer({
       });
       map.fitBounds(bounds);
     }
+    
+    // Force a resize event to ensure the map renders correctly
+    setTimeout(() => {
+      google.maps.event.trigger(map, 'resize');
+      if (mapOptions.center) {
+        map.setCenter(mapOptions.center);
+      }
+      console.log('Map initialization complete, forced resize event');
+    }, 500);
 
     return () => {
       // Clean up event listeners
       google.maps.event.clearInstanceListeners(map);
     };
-  }, [mapLoaded, pins, theme, onMapClick, onBoundsChanged]);
+  }, [mapLoaded, pins, onMapClick, onBoundsChanged]);
+
+  // Update map styles when theme changes
+  useEffect(() => {
+    if (!googleMapRef.current || !theme) {
+      console.log('MapContainer: Cannot apply theme - map or styles not available', {
+        hasMap: !!googleMapRef.current,
+        hasTheme: !!theme
+      });
+      return;
+    }
+    
+    // Check if theme has styles property and it's an array
+    if (!theme.styles || !Array.isArray(theme.styles)) {
+      console.error('MapContainer: Theme styles is not an array:', theme);
+      alert(`Error: Theme styles for ${theme.name} is not in the correct format`);
+      return;
+    }
+    
+    // Alert for debugging
+    alert(`Applying theme: ${theme.name}\nStyles count: ${theme.styles.length}`);
+    console.log('MapContainer: Applying theme styles:', { 
+      themeName: theme.name, 
+      themeId: theme.id,
+      stylesCount: theme.styles.length,
+      stylesSample: theme.styles.length > 0 ? JSON.stringify(theme.styles[0]).substring(0, 100) + '...' : 'No styles',
+      mapInstance: !!googleMapRef.current,
+      apiKeyStatus: !!apiKey
+    });
+    
+    try {
+      // APPROACH 1: Apply styles directly to existing map using setOptions
+      console.log('APPROACH 1: Applying styles directly to existing map using setOptions');
+      
+      // Force a deep clone of the styles to ensure Google Maps recognizes the change
+      const clonedStyles = JSON.parse(JSON.stringify(theme.styles));
+      
+      // Log the exact styles we're applying
+      console.log('Styles being applied:', {
+        count: clonedStyles.length,
+        sample: clonedStyles.length > 0 ? JSON.stringify(clonedStyles[0]) : 'No styles'
+      });
+      
+      // Apply styles to existing map using setOptions as recommended in Google Maps documentation
+      googleMapRef.current.setOptions({ styles: clonedStyles });
+      
+      // Force map redraw
+      google.maps.event.trigger(googleMapRef.current, 'resize');
+      
+      // Check for development purposes watermark which indicates API key restrictions
+      checkForDevelopmentWatermark(googleMapRef.current);
+      
+      // Always create a new map instance as a more aggressive approach
+      console.log('Creating new map instance to ensure styles are applied');
+      createNewMapInstance(clonedStyles);
+      
+      // Alert for user feedback
+      alert(`Theme applied: ${theme.name}\nStyles count: ${clonedStyles.length}\nMap has been recreated to ensure styles are applied.`);
+    } catch (error: unknown) {
+      console.error('Error applying theme styles:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert(`Error applying theme styles: ${errorMessage}`);
+    }
+  }, [theme, apiKey]);
+  
+  // Helper function to create a new map instance with styles
+  const createNewMapInstance = (styles: any[]) => {
+    if (!mapRef.current || !googleMapRef.current) return;
+    
+    console.log('APPROACH 2: Creating new map instance with styles');
+    
+    try {
+      // Clean up old map instance
+      // Remove all markers from the map
+      markersRef.current.forEach(marker => marker.setMap(null));
+      
+      // Get current map state
+      const currentCenter = googleMapRef.current.getCenter();
+      const currentZoom = googleMapRef.current.getZoom();
+      const mapDiv = googleMapRef.current.getDiv();
+      
+      // Clear the map reference
+      googleMapRef.current = null;
+      
+      // Create a completely new map instance
+      const clonedStyles = JSON.parse(JSON.stringify(styles));
+      const mapOptions: google.maps.MapOptions = {
+        center: currentCenter,
+        zoom: currentZoom,
+        styles: clonedStyles,
+        disableDefaultUI: true,
+      };
+      
+      console.log('Creating new map with options:', {
+        center: mapOptions.center?.toString(),
+        zoom: mapOptions.zoom,
+        stylesCount: clonedStyles.length,
+        firstStyle: clonedStyles.length > 0 ? 
+          JSON.stringify(clonedStyles[0]).substring(0, 100) + '...' : 'No styles'
+      });
+      
+      // Create new map
+      const newMap = new google.maps.Map(mapDiv, mapOptions);
+      googleMapRef.current = newMap;
+      
+      // Re-add markers to the new map
+      pins.forEach(pin => {
+        const marker = new google.maps.Marker({
+          position: { lat: pin.lat, lng: pin.lng },
+          map: newMap,
+          title: pin.title,
+          icon: pin.icon ? pin.icon : undefined,
+        });
+        
+        markersRef.current.set(pin.id, marker);
+        
+        // Add click handler
+        if (onPinClick) {
+          marker.addListener('click', () => onPinClick(pin));
+        }
+      });
+      
+      // Re-add event listeners
+      if (onMapClick) {
+        newMap.addListener('click', (e: google.maps.MapMouseEvent) => onMapClick(e));
+      }
+      
+      if (onBoundsChanged) {
+        newMap.addListener('bounds_changed', () => {
+          const bounds = newMap.getBounds();
+          if (bounds) onBoundsChanged(bounds);
+        });
+      }
+      
+      // Force a resize event to ensure the map renders correctly
+      setTimeout(() => {
+        google.maps.event.trigger(newMap, 'resize');
+        if (currentCenter) {
+          newMap.setCenter(currentCenter);
+        }
+        
+        // Check for watermark
+        checkForDevelopmentWatermark(newMap);
+        
+        // Verify if styles were applied correctly
+        const appliedStyles = newMap.get('styles');
+        console.log('New map styles verification:', {
+          hasStyles: !!appliedStyles,
+          stylesCount: appliedStyles?.length || 0,
+          sample: appliedStyles?.length > 0 ? JSON.stringify(appliedStyles[0]) : 'No styles'
+        });
+      }, 500);
+      
+      console.log('MapContainer: New map instance created with styles');
+      alert(`Map completely recreated with new styles.\nTheme: ${theme?.name}\nStyles applied: ${clonedStyles.length}`);
+    }
+    catch (error: unknown) {
+      console.error('Error creating new map instance:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert(`Error creating new map: ${errorMessage}`);
+    }
+  };
 
   // Update pins when they change
   useEffect(() => {

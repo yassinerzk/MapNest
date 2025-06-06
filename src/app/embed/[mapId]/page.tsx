@@ -45,7 +45,7 @@ export default function EmbedPage({ params, searchParams }: EmbedPageProps) {
       lat: 40.7128,
       lng: -74.006,
       color: '#4f46e5',
-      icon: 'office',
+      icon: '/office.svg',
     },
     {
       id: 'pin-2',
@@ -54,7 +54,7 @@ export default function EmbedPage({ params, searchParams }: EmbedPageProps) {
       lat: 40.7282,
       lng: -73.9942,
       color: '#10b981',
-      icon: 'store',
+      icon: '/store.svg',
     },
   ]);
 

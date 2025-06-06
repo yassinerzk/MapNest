@@ -38,6 +38,37 @@ export function MapWrapper({
   const [theme, setTheme] = useState<MapTheme>(
     initialTheme || getDefaultTheme()
   );
+
+  // Handle theme changes with proper object creation
+  const handleThemeChange = (newTheme: MapTheme) => {
+    console.log('MapWrapper: Theme change requested:', { 
+      from: theme.name, 
+      to: newTheme.name, 
+      fromId: theme.id,
+      toId: newTheme.id,
+      stylesCount: newTheme.styles?.length || 0
+    });
+    
+    // Alert for debugging
+    alert(`Theme Change:\nFrom: ${theme.name} (${theme.id})\nTo: ${newTheme.name} (${newTheme.id})\nStyles Count: ${newTheme.styles?.length || 0}`);
+    
+    // Always create a completely new theme object with deep-cloned styles
+    const brandNewTheme = {
+      ...newTheme,
+      styles: JSON.parse(JSON.stringify(newTheme.styles || [])),
+    };
+    
+    console.log('MapWrapper: Created brand new theme object with deep-cloned styles');
+    
+    // Always set the new theme to force a re-render and style application
+    setTheme(brandNewTheme);
+    
+    // Force a re-render by updating a timestamp
+    setThemeUpdateTimestamp(Date.now());
+  };
+  
+  // Track theme updates with timestamp
+  const [themeUpdateTimestamp, setThemeUpdateTimestamp] = useState<number>(Date.now());
   const [layout, setLayout] = useState<MapLayout>(initialLayout);
   const [selectedPin, setSelectedPin] = useState<MapPin | null>(null);
   const [embedOptions, setEmbedOptions] = useState<Partial<EmbedOptions>>({
@@ -127,7 +158,7 @@ export function MapWrapper({
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 items-stretch sm:items-center">
             <ThemeSelector
               currentTheme={theme}
-              onThemeChange={setTheme}
+              onThemeChange={handleThemeChange}
               className="w-full sm:w-48"
             />
             <LayoutSelector

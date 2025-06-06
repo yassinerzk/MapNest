@@ -39,7 +39,7 @@ export interface MapTheme {
 /**
  * Map Style Key type for predefined styles
  */
-export type MapStyleKey = 'default' | 'darkNova' | 'pastelPop' | 'minimalInk' | 'retroWave' | 'cyberNight' | 'sepiaDust' | 'oceanBreeze' | 'sakuraBlossom' | 'desertGlow' | 'midnightBlues';
+export type MapStyleKey = 'default' | 'darkNova' | 'pastelPop' | 'minimalInk' | 'retroWave' | 'cyberNight' | 'sepiaDust' | 'oceanBreeze' | 'sakuraBlossom' | 'desertGlow' | 'midnightBlues' | 'forestCalm' | 'oceanBlue' | 'mysticPurple' | 'citrusZest';
 
 /**
  * Map Layout options
