@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { MapWrapper } from '@/components/organisms/MapWrapper';
 import { cn } from '@/lib/utils';
+import { getThemeById, getDefaultTheme } from '@/lib/themeUtils';
 import type { MapPin, MapTheme } from '@/types';
 
 interface DashboardProps {
@@ -45,21 +46,7 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
           icon: 'warehouse',
         },
       ] as MapPin[],
-      theme: {
-        id: 'corporate',
-        name: 'Corporate',
-        styles: [
-          { featureType: 'all', elementType: 'labels.text.fill', stylers: [{ color: '#6b7280' }] },
-          { featureType: 'water', elementType: 'geometry.fill', stylers: [{ color: '#dbeafe' }] },
-          { featureType: 'landscape', elementType: 'geometry.fill', stylers: [{ color: '#f9fafb' }] },
-          { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#e5e7eb' }] },
-          { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#d1fae5' }] },
-        ],
-        primaryColor: '#4f46e5',
-        secondaryColor: '#6366f1',
-        pinColor: '#4f46e5',
-        isDark: false,
-      } as MapTheme,
+      theme: getThemeById('minimalInk') || getDefaultTheme(),
     },
     {
       id: 'map-2',
@@ -84,21 +71,7 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
           icon: 'workshop',
         },
       ] as MapPin[],
-      theme: {
-        id: 'night',
-        name: 'Night Mode',
-        styles: [
-          { featureType: 'all', elementType: 'labels.text.fill', stylers: [{ color: '#d1d5db' }] },
-          { featureType: 'all', elementType: 'geometry', stylers: [{ color: '#1f2937' }] },
-          { featureType: 'water', elementType: 'geometry.fill', stylers: [{ color: '#0f172a' }] },
-          { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#374151' }] },
-          { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#312e81' }] },
-        ],
-        primaryColor: '#8b5cf6',
-        secondaryColor: '#a78bfa',
-        pinColor: '#8b5cf6',
-        isDark: true,
-      } as MapTheme,
+      theme: getThemeById('darkNova') || getDefaultTheme(),
     },
   ];
 
