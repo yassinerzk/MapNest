@@ -71,21 +71,11 @@ export function MapWrapper({
 
   // Handle theme changes with proper object creation
   const handleThemeChange = (newTheme: MapTheme) => {
-    console.log('MapWrapper: Theme change requested:', { 
-      from: theme.name, 
-      to: newTheme.name, 
-      fromId: theme.id,
-      toId: newTheme.id,
-      stylesCount: newTheme.styles?.length || 0
-    });
-    
     // Always create a completely new theme object with deep-cloned styles
     const brandNewTheme = {
       ...newTheme,
       styles: JSON.parse(JSON.stringify(newTheme.styles || [])),
     };
-    
-    console.log('MapWrapper: Created brand new theme object with deep-cloned styles');
     
     // Always set the new theme to force a re-render and style application
     setTheme(brandNewTheme);
@@ -235,7 +225,10 @@ export function MapWrapper({
             />
             <EmbedCode
               mapId={mapId}
-              options={embedOptions}
+              options={{
+                ...embedOptions,
+                theme: theme // Pass the current theme to embed options
+              }}
               onOptionsChange={setEmbedOptions}
             />
           </div>

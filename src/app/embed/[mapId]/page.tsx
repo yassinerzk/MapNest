@@ -31,21 +31,9 @@ export default function EmbedPage({ params, searchParams }: EmbedPageProps) {
   // Load map data from database
   useEffect(() => {
     const loadMapData = () => {
-      console.log('EmbedPage: Loading map data for mapId:', params.mapId);
       const mapData = mapDatabase.getMap(params.mapId);
       
       if (mapData) {
-        console.log('EmbedPage: Loaded map data:', {
-          mapId: mapData.id,
-          name: mapData.name,
-          theme: mapData.theme ? {
-            id: mapData.theme.id,
-            name: mapData.theme.name,
-            stylesCount: mapData.theme.styles?.length || 0
-          } : 'No theme',
-          pinsCount: mapData.pins?.length || 0,
-          layout: mapData.layout
-        });
         setPins(mapData.pins || []);
         setTheme(mapData.theme || getDefaultTheme());
         setLayout(mapData.layout || 'fullscreen');

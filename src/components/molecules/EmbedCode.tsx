@@ -41,9 +41,16 @@ export function EmbedCode({
   const generateIframeCode = (): string => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mapnest.app';
     const params = new URLSearchParams();
+    
+    // Add theme ID to URL if available in options
+    if (options.theme?.id) {
+      params.set('theme', options.theme.id);
+    }
+    
     if (embedOptions.showFullInterface) {
       params.set('fullInterface', 'true');
     }
+    
     const url = `${baseUrl}/embed/${mapId}${params.toString() ? '?' + params.toString() : ''}`;
     
     return `<iframe 
@@ -61,8 +68,11 @@ export function EmbedCode({
   const generateScriptCode = (): string => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mapnest.app';
     
+    // Add theme data attribute if available
+    const themeAttr = options.theme?.id ? `data-theme="${options.theme.id}"` : '';
+    
     return `<div id="mapnest-${mapId}" style="width:${embedOptions.width};height:${embedOptions.height};"></div>
-<script src="${baseUrl}/api/embed.js" data-mapid="${mapId}" ${embedOptions.responsive ? 'data-responsive="true"' : ''} ${embedOptions.showFullInterface ? 'data-full-interface="true"' : ''} async></script>`;
+<script src="${baseUrl}/api/embed.js" data-mapid="${mapId}" ${themeAttr} ${embedOptions.responsive ? 'data-responsive="true"' : ''} ${embedOptions.showFullInterface ? 'data-full-interface="true"' : ''} async></script>`;
   };
 
   // Get the appropriate code based on selected type
@@ -90,167 +100,113 @@ export function EmbedCode({
   };
 
   return (
-    <div className={cn('space-y-4', className)}>
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Embed Code</h2>
-        <div className="flex space-x-2">
-          <button
-            type="button"
-            onClick={() => setEmbedType('iframe')}
-            className={cn(
-              'px-3 py-1 text-sm rounded-md transition-colors',
-              embedType === 'iframe'
-                ? 'bg-primary text-white'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-            )}
-          >
-            iFrame
-          </button>
-          <button
-            type="button"
-            onClick={() => setEmbedType('script')}
-            className={cn(
-              'px-3 py-1 text-sm rounded-md transition-colors',
-              embedType === 'script'
-                ? 'bg-primary text-white'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-            )}
-          >
-            JavaScript
-          </button>
-        </div>
+    <div className={cn('flex flex-col space-y-3', className)}>
+      <h3 className="text-lg font-medium">Embed Code</h3>
+      
+      <div className="flex space-x-2 mb-2">
+        <button
+          onClick={() => setEmbedType('iframe')}
+          className={cn(
+            'px-3 py-1 text-sm rounded-md',
+            embedType === 'iframe'
+              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+              : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+          )}
+        >
+          iFrame
+        </button>
+        <button
+          onClick={() => setEmbedType('script')}
+          className={cn(
+            'px-3 py-1 text-sm rounded-md',
+            embedType === 'script'
+              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+              : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+          )}
+        >
+          JavaScript
+        </button>
       </div>
-
-      {/* Options */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label htmlFor="embed-width" className="block text-sm font-medium">
-            Width
-          </label>
-          <input
-            id="embed-width"
-            type="text"
-            value={embedOptions.width}
-            onChange={(e) => handleOptionChange('width', e.target.value)}
-            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="embed-height" className="block text-sm font-medium">
-            Height
-          </label>
-          <input
-            id="embed-height"
-            type="text"
-            value={embedOptions.height}
-            onChange={(e) => handleOptionChange('height', e.target.value)}
-            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-4">
-        <div className="flex items-center">
-          <input
-            id="embed-responsive"
-            type="checkbox"
-            checked={embedOptions.responsive}
-            onChange={(e) => handleOptionChange('responsive', e.target.checked)}
-            className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-          />
-          <label htmlFor="embed-responsive" className="ml-2 block text-sm">
-            Responsive
-          </label>
-        </div>
-
-        <div className="flex items-center">
-          <input
-            id="embed-attribution"
-            type="checkbox"
-            checked={embedOptions.showAttribution}
-            onChange={(e) => handleOptionChange('showAttribution', e.target.checked)}
-            className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-          />
-          <label htmlFor="embed-attribution" className="ml-2 block text-sm">
-            Show Attribution
-          </label>
-        </div>
-
-        <div className="flex items-center">
-          <input
-            id="embed-fullscreen"
-            type="checkbox"
-            checked={embedOptions.allowFullscreen}
-            onChange={(e) => handleOptionChange('allowFullscreen', e.target.checked)}
-            className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-          />
-          <label htmlFor="embed-fullscreen" className="ml-2 block text-sm">
-            Allow Fullscreen
-          </label>
-        </div>
-
-        <div className="flex items-center">
-          <input
-            id="embed-full-interface"
-            type="checkbox"
-            checked={embedOptions.showFullInterface}
-            onChange={(e) => handleOptionChange('showFullInterface', e.target.checked)}
-            className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-          />
-          <label htmlFor="embed-full-interface" className="ml-2 block text-sm">
-            Show Full Interface
-          </label>
-        </div>
-      </div>
-
-      {/* Code Display */}
+      
       <div className="relative">
-        <pre className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg overflow-x-auto text-sm">
-          <code className="text-gray-800 dark:text-gray-200">{embedCode}</code>
+        <pre className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md text-sm overflow-x-auto whitespace-pre-wrap break-all">
+          {embedCode}
         </pre>
         <button
-          type="button"
           onClick={handleCopy}
-          className="absolute top-2 right-2 p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+          className="absolute top-2 right-2 p-1.5 rounded-md bg-white dark:bg-gray-700 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label="Copy to clipboard"
         >
           {copied ? (
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
-              <polyline points="20 6 9 17 4 12"></polyline>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
           ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+              <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
             </svg>
           )}
         </button>
       </div>
-
-      <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-        <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">Preview</h3>
-        <div 
-          className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden"
-          style={{ width: embedOptions.width, height: embedOptions.height, maxWidth: '100%' }}
-        >
-          {embedType === 'iframe' ? (
-            <iframe 
-              src={`/embed/${mapId}${embedOptions.showFullInterface ? '?fullInterface=true' : ''}`}
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              allowFullScreen={embedOptions.allowFullscreen}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          ) : (
-            <div id={`mapnest-preview-${mapId}`} className="w-full h-full">
-              <div className="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500">
-                Script embed preview not available in editor
-              </div>
+      
+      <div className="space-y-3">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Dimensions
+          </label>
+          <div className="flex space-x-2">
+            <div className="flex-1">
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Width</label>
+              <input
+                type="text"
+                value={embedOptions.width}
+                onChange={(e) => handleOptionChange('width', e.target.value)}
+                className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
-          )}
+            <div className="flex-1">
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Height</label>
+              <input
+                type="text"
+                value={embedOptions.height}
+                onChange={(e) => handleOptionChange('height', e.target.value)}
+                className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex flex-col space-y-2">
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={embedOptions.responsive}
+              onChange={(e) => handleOptionChange('responsive', e.target.checked)}
+              className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-700"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">Responsive (adjust to container)</span>
+          </label>
+          
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={embedOptions.allowFullscreen}
+              onChange={(e) => handleOptionChange('allowFullscreen', e.target.checked)}
+              className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-700"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">Allow fullscreen</span>
+          </label>
+          
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={embedOptions.showFullInterface}
+              onChange={(e) => handleOptionChange('showFullInterface', e.target.checked)}
+              className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-700"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">Show full interface (controls & sidebar)</span>
+          </label>
         </div>
       </div>
     </div>

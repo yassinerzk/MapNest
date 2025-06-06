@@ -88,6 +88,7 @@ export interface EmbedOptions {
   showAttribution: boolean;
   allowFullscreen: boolean;
   showFullInterface: boolean; // Show sidebar and controls like the dashboard
+  theme?: MapTheme; // Add theme to embed options
 }
 
 /**
