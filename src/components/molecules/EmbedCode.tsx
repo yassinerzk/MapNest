@@ -28,6 +28,7 @@ export function EmbedCode({
     responsive: true,
     showAttribution: true,
     allowFullscreen: true,
+    showFullInterface: false,
   };
 
   // Merge with provided options
@@ -39,7 +40,11 @@ export function EmbedCode({
   // Generate iframe embed code
   const generateIframeCode = (): string => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mapnest.app';
-    const url = `${baseUrl}/embed/${mapId}`;
+    const params = new URLSearchParams();
+    if (embedOptions.showFullInterface) {
+      params.set('fullInterface', 'true');
+    }
+    const url = `${baseUrl}/embed/${mapId}${params.toString() ? '?' + params.toString() : ''}`;
     
     return `<iframe 
   src="${url}" 
@@ -57,7 +62,7 @@ export function EmbedCode({
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mapnest.app';
     
     return `<div id="mapnest-${mapId}" style="width:${embedOptions.width};height:${embedOptions.height};"></div>
-<script src="${baseUrl}/api/embed.js" data-mapid="${mapId}" ${embedOptions.responsive ? 'data-responsive="true"' : ''} async></script>`;
+<script src="${baseUrl}/api/embed.js" data-mapid="${mapId}" ${embedOptions.responsive ? 'data-responsive="true"' : ''} ${embedOptions.showFullInterface ? 'data-full-interface="true"' : ''} async></script>`;
   };
 
   // Get the appropriate code based on selected type
@@ -184,6 +189,19 @@ export function EmbedCode({
             Allow Fullscreen
           </label>
         </div>
+
+        <div className="flex items-center">
+          <input
+            id="embed-full-interface"
+            type="checkbox"
+            checked={embedOptions.showFullInterface}
+            onChange={(e) => handleOptionChange('showFullInterface', e.target.checked)}
+            className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+          />
+          <label htmlFor="embed-full-interface" className="ml-2 block text-sm">
+            Show Full Interface
+          </label>
+        </div>
       </div>
 
       {/* Code Display */}
@@ -218,7 +236,7 @@ export function EmbedCode({
         >
           {embedType === 'iframe' ? (
             <iframe 
-              src={`/embed/${mapId}`}
+              src={`/embed/${mapId}${embedOptions.showFullInterface ? '?fullInterface=true' : ''}`}
               width="100%"
               height="100%"
               style={{ border: 0 }}

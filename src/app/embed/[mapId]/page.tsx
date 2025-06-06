@@ -12,6 +12,7 @@ interface EmbedPageProps {
   searchParams: {
     theme?: string;
     layout?: string;
+    fullInterface?: string;
   };
 }
 
@@ -68,6 +69,9 @@ export default function EmbedPage({ params, searchParams }: EmbedPageProps) {
     ? searchParams.layout as any
     : 'fullscreen';
 
+  // Check if full interface should be shown
+  const showFullInterface = searchParams.fullInterface === 'true';
+
   return (
     <div className="h-screen w-screen overflow-hidden">
       <MapWrapper
@@ -76,7 +80,7 @@ export default function EmbedPage({ params, searchParams }: EmbedPageProps) {
         initialLayout={layout}
         mapId={params.mapId}
         apiKey={apiKey}
-        readOnly={true}
+        readOnly={!showFullInterface}
       />
     </div>
   );

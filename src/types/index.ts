@@ -87,6 +87,7 @@ export interface EmbedOptions {
   responsive: boolean;
   showAttribution: boolean;
   allowFullscreen: boolean;
+  showFullInterface: boolean; // Show sidebar and controls like the dashboard
 }
 
 /**
