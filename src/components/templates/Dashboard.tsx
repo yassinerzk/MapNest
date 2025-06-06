@@ -218,6 +218,17 @@ export function Dashboard({ apiKey, className }: DashboardProps) {
     );
   }
 
+  // Don't render if no map is selected
+  if (!selectedMap) {
+    return (
+      <div className={cn('min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center', className)}>
+        <div className="text-center">
+          <p className="text-gray-600 dark:text-gray-400">No map selected</p>
+        </div>
+      </div>
+    );
+  }
+
   if (maps.length === 0) {
     return (
       <div className={cn('min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center', className)}>

@@ -44,6 +44,22 @@ export function MapWrapper({
   const [theme, setTheme] = useState<MapTheme>(
     initialTheme || getDefaultTheme()
   );
+  const [layout, setLayout] = useState<MapLayout>(initialLayout);
+  const [selectedPin, setSelectedPin] = useState<MapPin | null>(null);
+  const [embedOptions, setEmbedOptions] = useState<Partial<EmbedOptions>>(
+    initialEmbedOptions || {
+      width: '100%',
+      height: '500px',
+      responsive: true,
+    }
+  );
+  const [saveMessage, setSaveMessage] = useState<string>('');
+  
+  // Track theme updates with timestamp
+  const [themeUpdateTimestamp, setThemeUpdateTimestamp] = useState<number>(Date.now());
+  
+  // Ref to access map instance for centering
+  const mapRef = useRef<google.maps.Map | null>(null);
 
   // Sync state with props when they change (e.g., when switching maps)
   useEffect(() => {
@@ -92,21 +108,7 @@ export function MapWrapper({
     setThemeUpdateTimestamp(Date.now());
   };
   
-  // Track theme updates with timestamp
-  const [themeUpdateTimestamp, setThemeUpdateTimestamp] = useState<number>(Date.now());
-  const [layout, setLayout] = useState<MapLayout>(initialLayout);
-  const [selectedPin, setSelectedPin] = useState<MapPin | null>(null);
-  const [embedOptions, setEmbedOptions] = useState<Partial<EmbedOptions>>(
-    initialEmbedOptions || {
-      width: '100%',
-      height: '500px',
-      responsive: true,
-    }
-  );
-  const [saveMessage, setSaveMessage] = useState<string>('');
-  
-  // Ref to access map instance for centering
-  const mapRef = useRef<google.maps.Map | null>(null);
+
   
   // Handle pin selection with map centering
   const handlePinSelect = (pin: MapPin) => {
