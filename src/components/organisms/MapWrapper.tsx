@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { MapContainer } from '@/components/molecules/MapContainer';
 import { Sidebar } from '@/components/molecules/Sidebar';
@@ -18,8 +18,11 @@ interface MapWrapperProps {
   initialPins?: MapPin[];
   initialTheme?: MapTheme;
   initialLayout?: MapLayout;
+  initialEmbedOptions?: Partial<EmbedOptions>;
   mapId: string;
+  mapName?: string;
   apiKey: string;
+  onMapUpdate?: () => void;
   className?: string;
   readOnly?: boolean;
 }
@@ -28,8 +31,11 @@ export function MapWrapper({
   initialPins = [],
   initialTheme,
   initialLayout = 'fullscreen',
+  initialEmbedOptions,
   mapId,
+  mapName,
   apiKey,
+  onMapUpdate,
   className,
   readOnly = false,
 }: MapWrapperProps) {
@@ -38,6 +44,30 @@ export function MapWrapper({
   const [theme, setTheme] = useState<MapTheme>(
     initialTheme || getDefaultTheme()
   );
+
+  // Sync state with props when they change (e.g., when switching maps)
+  useEffect(() => {
+    setPins(initialPins);
+  }, [initialPins]);
+
+  useEffect(() => {
+    setTheme(initialTheme || getDefaultTheme());
+  }, [initialTheme]);
+
+  useEffect(() => {
+    setLayout(initialLayout);
+  }, [initialLayout]);
+
+  useEffect(() => {
+    if (initialEmbedOptions) {
+      setEmbedOptions(initialEmbedOptions);
+    }
+  }, [initialEmbedOptions]);
+
+  // Reset selected pin when pins change
+  useEffect(() => {
+    setSelectedPin(null);
+  }, [mapId]);
 
   // Handle theme changes with proper object creation
   const handleThemeChange = (newTheme: MapTheme) => {
@@ -48,9 +78,6 @@ export function MapWrapper({
       toId: newTheme.id,
       stylesCount: newTheme.styles?.length || 0
     });
-    
-    // Alert for debugging
-    alert(`Theme Change:\nFrom: ${theme.name} (${theme.id})\nTo: ${newTheme.name} (${newTheme.id})\nStyles Count: ${newTheme.styles?.length || 0}`);
     
     // Always create a completely new theme object with deep-cloned styles
     const brandNewTheme = {
@@ -71,11 +98,13 @@ export function MapWrapper({
   const [themeUpdateTimestamp, setThemeUpdateTimestamp] = useState<number>(Date.now());
   const [layout, setLayout] = useState<MapLayout>(initialLayout);
   const [selectedPin, setSelectedPin] = useState<MapPin | null>(null);
-  const [embedOptions, setEmbedOptions] = useState<Partial<EmbedOptions>>({
-    width: '100%',
-    height: '500px',
-    responsive: true,
-  });
+  const [embedOptions, setEmbedOptions] = useState<Partial<EmbedOptions>>(
+    initialEmbedOptions || {
+      width: '100%',
+      height: '500px',
+      responsive: true,
+    }
+  );
   const [saveMessage, setSaveMessage] = useState<string>('');
   
   // Ref to access map instance for centering
@@ -193,12 +222,15 @@ export function MapWrapper({
             />
             <SaveButton
               mapId={mapId}
-              mapName={`Map ${mapId}`}
+              mapName={mapName || `Map ${mapId}`}
               pins={pins}
               theme={theme}
               layout={layout}
               embedOptions={embedOptions}
-              onSaveSuccess={() => setSaveMessage('Map saved successfully!')}
+              onSaveSuccess={() => {
+                setSaveMessage('Map saved successfully!');
+                onMapUpdate?.(); // Notify parent component of map update
+              }}
               onSaveError={(error) => setSaveMessage(`Save failed: ${error}`)}
             />
             <EmbedCode

@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { MapWrapper } from '@/components/organisms/MapWrapper';
 import { getThemeById, getDefaultTheme } from '@/lib/themeUtils';
-import type { MapPin } from '@/types';
+import { mapDatabase } from '@/lib/database';
+import type { MapPin, MapTheme, MapLayout } from '@/types';
 
 interface EmbedPageProps {
   params: {
@@ -19,6 +20,49 @@ interface EmbedPageProps {
 export default function EmbedPage({ params, searchParams }: EmbedPageProps) {
   // Get API key from environment variables
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+  
+  // State for map data
+  const [pins, setPins] = useState<MapPin[]>([]);
+  const [theme, setTheme] = useState<MapTheme>(getDefaultTheme());
+  const [layout, setLayout] = useState<MapLayout>('fullscreen');
+  const [embedOptions, setEmbedOptions] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Load map data from database
+  useEffect(() => {
+    const loadMapData = () => {
+      console.log('EmbedPage: Loading map data for mapId:', params.mapId);
+      const mapData = mapDatabase.getMap(params.mapId);
+      
+      if (mapData) {
+        console.log('EmbedPage: Loaded map data:', {
+          mapId: mapData.id,
+          name: mapData.name,
+          theme: mapData.theme ? {
+            id: mapData.theme.id,
+            name: mapData.theme.name,
+            stylesCount: mapData.theme.styles?.length || 0
+          } : 'No theme',
+          pinsCount: mapData.pins?.length || 0,
+          layout: mapData.layout
+        });
+        setPins(mapData.pins || []);
+        setTheme(mapData.theme || getDefaultTheme());
+        setLayout(mapData.layout || 'fullscreen');
+        setEmbedOptions(mapData.embedOptions || {});
+      } else {
+        console.warn('EmbedPage: Map not found for mapId:', params.mapId, 'using default data');
+        // Use default data if map not found
+        setPins([]);
+        setTheme(getDefaultTheme());
+        setLayout('fullscreen');
+      }
+      
+      setIsLoading(false);
+    };
+    
+    loadMapData();
+  }, [params.mapId]);
   
   // Show error if API key is missing
   if (!apiKey) {
@@ -37,37 +81,26 @@ export default function EmbedPage({ params, searchParams }: EmbedPageProps) {
     );
   }
   
-  // Sample data for demonstration
-  const [pins, setPins] = useState<MapPin[]>([
-    {
-      id: 'pin-1',
-      title: 'Headquarters',
-      description: 'Our main office location with customer service center',
-      lat: 40.7128,
-      lng: -74.006,
-      color: '#4f46e5',
-      icon: '/office.svg',
-    },
-    {
-      id: 'pin-2',
-      title: 'Flagship Store',
-      description: 'Our largest retail location with full product lineup',
-      lat: 40.7282,
-      lng: -73.9942,
-      color: '#10b981',
-      icon: '/store.svg',
-    },
-  ]);
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg">Loading map...</p>
+        </div>
+      </div>
+    );
+  }
 
-  // Get theme from search params or use default
-  const theme = searchParams.theme 
-    ? getThemeById(searchParams.theme) || getDefaultTheme()
-    : getDefaultTheme();
+  // Override theme from search params if provided
+  const finalTheme = searchParams.theme 
+    ? getThemeById(searchParams.theme) || theme
+    : theme;
 
-  // Get layout from search params or use default
-  const layout = searchParams.layout && ['fullscreen', 'split', 'sidebar-right', 'floating-card', 'list-mode'].includes(searchParams.layout)
-    ? searchParams.layout as any
-    : 'fullscreen';
+  // Override layout from search params if provided
+  const finalLayout = searchParams.layout && ['fullscreen', 'split', 'sidebar-right', 'floating-card', 'list-mode'].includes(searchParams.layout)
+    ? searchParams.layout as MapLayout
+    : layout;
 
   // Check if full interface should be shown
   const showFullInterface = searchParams.fullInterface === 'true';
@@ -76,8 +109,9 @@ export default function EmbedPage({ params, searchParams }: EmbedPageProps) {
     <div className="h-screen w-screen overflow-hidden">
       <MapWrapper
         initialPins={pins}
-        initialTheme={theme}
-        initialLayout={layout}
+        initialTheme={finalTheme}
+        initialLayout={finalLayout}
+        initialEmbedOptions={embedOptions}
         mapId={params.mapId}
         apiKey={apiKey}
         readOnly={!showFullInterface}

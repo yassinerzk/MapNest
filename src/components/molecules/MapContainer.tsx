@@ -109,8 +109,6 @@ export function MapContainer({
             console.error('1. Billing is not enabled on your Google Cloud account');
             console.error('2. The API key has restrictions preventing it from working on your domain');
             console.error('3. The Maps JavaScript API is not enabled for this API key');
-            
-            alert('Google Maps API Key Issue Detected!\n\nThe "For development purposes only" watermark indicates your API key needs attention.\n\nPlease check the console for details on how to fix this.');
           }
         });
         

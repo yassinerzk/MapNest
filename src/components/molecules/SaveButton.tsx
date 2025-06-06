@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { fileStorage } from '@/lib/fileStorage';
+import { mapDatabase } from '@/lib/database';
 import type { MapPin, MapTheme, MapLayout, EmbedOptions } from '@/types';
 
 interface SaveButtonProps {
@@ -35,13 +35,23 @@ export function SaveButton({
     setIsSaving(true);
     
     try {
-      fileStorage.saveMap({
-        id: mapId,
+      // Get the current map data to preserve other fields
+      const currentMap = mapDatabase.getMap(mapId);
+      if (!currentMap) {
+        throw new Error('Map not found');
+      }
+      
+      // Update the map with new data
+      mapDatabase.updateMap(mapId, {
         name: mapName,
         pins,
         theme,
         layout,
-        embedOptions,
+        embedOptions: {
+          ...currentMap.embedOptions,
+          ...embedOptions,
+          mapId: mapId, // Ensure mapId is always set
+        },
       });
       
       setLastSaved(new Date());
@@ -56,7 +66,7 @@ export function SaveButton({
 
   const handleExport = () => {
     try {
-      fileStorage.exportToFile();
+      mapDatabase.exportToFile();
     } catch (error) {
       console.error('Export error:', error);
       onSaveError?.(error instanceof Error ? error.message : 'Failed to export data');
@@ -73,7 +83,7 @@ export function SaveButton({
       if (!file) return;
       
       try {
-        await fileStorage.importFromFile(file);
+        await mapDatabase.importFromFile(file);
         onSaveSuccess?.();
         // Reload the page to reflect imported data
         window.location.reload();
